@@ -1,0 +1,65 @@
+// backend/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Route {
+  id              String   @id @default(uuid())
+  route_id        String   @unique
+  vesselType      String
+  fuelType        String
+  year            Int
+  ghg_intensity   Float
+  fuelConsumption Float
+  distance        Float
+  totalEmissions  Float
+  is_baseline     Boolean  @default(false)
+
+  @@map("routes")
+}
+
+model ShipCompliance {
+  id        String   @id @default(uuid())
+  ship_id   String
+  year      Int
+  cb_gco2eq Float
+
+  @@unique([ship_id, year])
+  @@map("ship_compliance")
+}
+
+model BankEntry {
+  id            String   @id @default(uuid())
+  ship_id       String
+  year          Int
+  amount_gco2eq Float
+
+  @@map("bank_entries")
+}
+
+model Pool {
+  id         String       @id @default(uuid())
+  year       Int
+  created_at DateTime     @default(now())
+  members    PoolMember[]
+
+  @@map("pools")
+}
+
+model PoolMember {
+  id        String @id @default(uuid())
+  pool_id   String
+  ship_id   String
+  cb_before Float
+  cb_after  Float
+
+  pool      Pool   @relation(fields: [pool_id], references: [id])
+
+  @@map("pool_members")
+}
